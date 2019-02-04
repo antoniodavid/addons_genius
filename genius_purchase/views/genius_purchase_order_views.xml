@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <record id="genius_purchase_order_tree" model="ir.ui.view">
+            <field name="name">genius.purchase.order.tree</field>
+            <field name="model">genius.purchase.order</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Órdenes de Compra">
+                    <field name="name" />
+                    <field name="dateCreated" />
+                </tree>
+            </field>
+
+        </record>
+        <!-- Form view for "model" -->
+        <record id="genius_purchase_order_form" model="ir.ui.view">
+            <field name="name">genius.purchase.order.form</field>
+            <field name="model">genius.purchase.order</field>
+            <field name="type">form</field>
+            <field name="mode">primary</field>
+            <field name="priority" eval="16" />
+            <field name="active" eval="True" />
+            <field name="arch" type="xml">
+                <form string="Genius Órden de Compra">
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" class="oe_edit_only" />
+                            <h1>
+                                <field name="name" class="oe_inline" placeholder="Nombre" />
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="storeID" />
+                                <field name="storeName" />
+                                <field name="supplierName" />
+                            </group>
+                            <group>
+                                <field name="accountNumber" />
+                                <field name="orderTotal" />
+                            </group>
+                        </group>
+
+                        <notebook>
+                            <page string="Líneas de Compras">
+                                <field name="order_line_ids">
+                                    <tree string="Líneas de Compras" create="1" delete="1" edit="1" editable="top">
+                                        <field name="supplierSKU" />
+                                        <field name="itemDescription" />
+                                        <field name="uom" />
+                                        <field name="quantity" />
+                                        <field name="cost" />
+                                        <field name="amount" sum="Total importe"/>
+                                    </tree>
+                                </field>
+                            </page>
+
+                            <page string="Mensaje">
+                                <field name="message" />
+                            </page>
+
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="action_genius_purchase_order" model="ir.actions.act_window">
+            <field name="name">Genius - Órdenes de Compra</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">genius.purchase.order</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+          Crear una nueva órden de compra
+                </p>
+            </field>
+        </record>
+
+        <record model="ir.actions.server" id="action_genius_purchases_get_orders">
+            <field name="name">Genius - Órdenes de Compra</field>
+            <field name="model_id" ref="model_genius_purchase_order"/>
+            <field name="state">code</field>
+            <field name="code">action = model.redirect_purchases_orders_view()</field>
+        </record>
+
+        <record id="cron_genius_purchase_get_orders" model="ir.cron">
+            <field name="name">Genius - OC</field>
+            <field name="active" eval="True" />
+            <field name="user_id" ref="base.user_root" />
+            <field name="interval_number">5</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="doall">1</field>
+            <field name="model_id" ref="model_genius_purchase_order" />
+            <field name="code">model.get_purchase_orders()</field>
+        </record>
+
+
+    </data>
+</odoo>
