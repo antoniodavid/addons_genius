@@ -97,6 +97,7 @@
             <field name="numbercall">-1</field>
             <field name="doall">1</field>
             <field name="model_id" ref="model_genius_purchase_order" />
+            <field name="state">code</field>
             <field name="code">model.get_purchase_orders()</field>
         </record>
 

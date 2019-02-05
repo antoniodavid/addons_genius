@@ -122,7 +122,6 @@ class GeniusPurchaseOrder(models.Model):
 
     @api.model
     def get_purchase_orders(self):
-        print('tarea cada 1min')
         req = self.requests(endpoints='orders')
         orders = json.loads(req.content.decode('utf-8'))
 
