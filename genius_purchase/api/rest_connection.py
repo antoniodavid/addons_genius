@@ -33,7 +33,10 @@ class SwaggerConnection(models.Model):
     client_id = fields.Char(
         string="Cliente ID", required=True, default="RetailerClientTest")
     client_secret = fields.Char(string="Cliente Contraseña", required=True)
-    store_id = fields.Integer(string="Store ID", default="100331")
+    store_ids = fields.One2many(
+        comodel_name="genius.swagger.store",
+        inverse_name="connection_id",
+        string="Stores")
     access_token = fields.Text(string="Token")
     expires = fields.Integer(string="Expira")
     token_type = fields.Char(string="Tipo de Token")
@@ -76,3 +79,16 @@ class SwaggerConnection(models.Model):
             })
             return True
         return False
+
+
+class SwaggerStore(models.Model):
+    _name = 'genius.swagger.store'
+
+    store_id = fields.Integer(string="Store ID", default="100331")
+    store_name = fields.Char(string="Nombre del Store")
+
+    connection_id = fields.Many2one(
+        string="Conexión a Swagger",
+        comodel_name='genius.swagger.connection',
+        ondelete='set null',
+    )

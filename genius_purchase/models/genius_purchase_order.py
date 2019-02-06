@@ -33,12 +33,12 @@ class GeniusPurchaseOrder(models.Model):
     storePONumber = fields.Char(string="Número del Store")
     supplierID = fields.Char(string="ID del Proveedor")
     supplierName = fields.Char(string="Nombre del Proveedor")
-    dateCreated = fields.Datetime()
+    dateCreated = fields.Datetime(string="Fecha de Creado")
     orderTotal = fields.Float(string="Importe Total")
     orderSource = fields.Integer(string="Fuente")
     orderStatus = fields.Integer(string="Estado")
     accountNumber = fields.Char(string="Número de cuenta")
-    message = fields.Html(string="Message")
+    message = fields.Html(string="Mensaje")
 
     order_line_ids = fields.One2many(
         comodel_name='genius.purchase.order.line',
@@ -100,17 +100,11 @@ class GeniusPurchaseOrder(models.Model):
             rec.name = "{} - {}".format(rec.storeName, rec.supplierName)
 
     @api.model
-    def requests(self, endpoints=''):
-        connection = self.env['genius.swagger.connection'].search(
-            [('type', '=', 'dev')], limit=1)
+    def requests(self, connection=None, store_id=None, endpoints=''):
 
-        if not connection.exists():
-            raise UserError(_("Ud. debe configurar la conexión a Swagger"))
-
-        # Load swagger resource file into app object
-        base_url = "{}/stores/{}/{}".format(connection.base_url,
-                                            connection.store_id, endpoints)
         headers['Authorization'] = connection.access_token
+        # Load swagger resource file into app object
+        base_url = "{}/stores/{}/{}".format(connection.base_url, store_id, endpoints)
 
         req = requests.get('{}'.format(base_url), headers=headers)
 
@@ -122,56 +116,64 @@ class GeniusPurchaseOrder(models.Model):
 
     @api.model
     def get_purchase_orders(self):
-        req = self.requests(endpoints='orders')
-        orders = json.loads(req.content.decode('utf-8'))
+        connection = self.env['genius.swagger.connection'].search(
+            [('type', '=', 'pro')], limit=1)
 
-        print(orders)
+        if not connection.exists():
+            raise UserError(_("Ud. debe configurar la conexión a Swagger"))
 
         uniqueOrder_List = [item.uniqueOrderID for item in self.search([])]
-        if len(orders.get('orders')):
-            orders_list = [
-                orders for orders in orders.get('orders')
-                if not orders['header']['uniqueOrderID'] in uniqueOrder_List
-            ]
-            if len(orders_list):
-                self.env.user.notify_info(
-                    message="Se han añadido {} nuevas órdenes de compras".
-                    format(len(orders_list)))
 
-            for order in orders_list:
-                uniqueOrderID = order['header'].get('uniqueOrderID')
-                if not uniqueOrderID in uniqueOrder_List:
-                    order_lines = []
-                    order_vals = {
-                        'uniqueOrderID': uniqueOrderID,
-                        'orderID': order['header'].get('orderID'),
-                        'storeID': order['header'].get('storeID'),
-                        'storeName': order['header'].get('storeName'),
-                        'storePONumber': order['header'].get('storePONumber'),
-                        'supplierID': order['header'].get('supplierID'),
-                        'supplierName': order['header'].get('supplierName'),
-                        'dateCreated': order['header'].get('dateCreated'),
-                        'orderTotal': order['header'].get('orderTotal'),
-                        'orderSource': order['header'].get('orderSource'),
-                        'orderStatus': order['header'].get('orderStatus'),
-                        'accountNumber': order['header'].get('accountNumber'),
-                        'message': order['header'].get('message'),
-                        'order_line_ids': order_lines
-                    }
+        for store in connection.store_ids:
+            req = self.requests(connection=connection, store_id=store.store_id, endpoints='orders')
+            orders = json.loads(req.content.decode('utf-8'))
 
-                    for item in order.get('details'):
-                        vals = {
-                            'supplierSKU': item.get('supplierSKU'),
-                            'itemDescription': item.get('itemDescription'),
-                            'cost': item.get('cost'),
-                            'quantity': item.get('quantity'),
-                            'uom': item.get('uom'),
-                            'amount': item.get('quantity') * item.get('cost'),
-                            'gtin': item.get('gtin')
+            print(orders)
+
+            if len(orders.get('orders')):
+                orders_list = [
+                    orders for orders in orders.get('orders')
+                    if not orders['header']['uniqueOrderID'] in uniqueOrder_List
+                ]
+                if len(orders_list):
+                    self.env.user.notify_info(
+                        message="Se han añadido {} nuevas órdenes de compras".
+                        format(len(orders_list)))
+
+                for order in orders_list:
+                    uniqueOrderID = order['header'].get('uniqueOrderID')
+                    if not uniqueOrderID in uniqueOrder_List:
+                        order_lines = []
+                        order_vals = {
+                            'uniqueOrderID': uniqueOrderID,
+                            'orderID': order['header'].get('orderID'),
+                            'storeID': order['header'].get('storeID'),
+                            'storeName': order['header'].get('storeName'),
+                            'storePONumber': order['header'].get('storePONumber'),
+                            'supplierID': order['header'].get('supplierID'),
+                            'supplierName': order['header'].get('supplierName'),
+                            'dateCreated': order['header'].get('dateCreated'),
+                            'orderTotal': order['header'].get('orderTotal'),
+                            'orderSource': order['header'].get('orderSource'),
+                            'orderStatus': order['header'].get('orderStatus'),
+                            'accountNumber': order['header'].get('accountNumber'),
+                            'message': order['header'].get('message'),
+                            'order_line_ids': order_lines
                         }
-                        order_lines.append((0, 0, vals))
 
-                    self.create(order_vals)
+                        for item in order.get('details'):
+                            vals = {
+                                'supplierSKU': item.get('supplierSKU'),
+                                'itemDescription': item.get('itemDescription'),
+                                'cost': item.get('cost'),
+                                'quantity': item.get('quantity'),
+                                'uom': item.get('uom'),
+                                'amount': item.get('quantity') * item.get('cost'),
+                                'gtin': item.get('gtin')
+                            }
+                            order_lines.append((0, 0, vals))
+
+                        self.create(order_vals)
 
         # return orders
 
@@ -193,7 +195,8 @@ class GeniusPurchaseOrderLine(models.Model):
     quantity = fields.Integer(string="Cantidad")
     uom = fields.Char(string="Uom")
     gtin = fields.Char()
-    amount = fields.Float(compute="_compute_get_amount", string="Importe")
+    amount = fields.Float(
+        compute="_compute_get_amount", store=True, string="Importe")
     purchase_id = fields.Many2one(
         comodel_name='genius.purchase.order', string="Órden de Compra")
 

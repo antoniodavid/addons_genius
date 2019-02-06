@@ -33,20 +33,35 @@
                                 <field name="base_url" widget="url"/>
                                 <field name="token_url" widget="url"/>
                                 <field name="type" />
-
                             </group>
                             <group>
-                                <field name="store_id"/>
                                 <field name="client_id"/>
                                 <field name="client_secret" password="True"/>
                             </group>
                         </group>
-                        <group>
-                            <field name="expires" colspan="2"/>
-                            <field name="token_type" colspan="2"/>
-                        </group>
-                        <separator string="Auth. Token" colspan="4"/>
-                        <field name="access_token" colspan="4"/>
+
+                        <notebook>
+                            <page string="Stores">
+                                <field name="store_ids">
+                                    <tree string="Store" create="1" delete="1" editable="bottom">
+                                        <field name="store_id"/>
+                                        <field name="store_name" />
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Auth. Token">
+                                <group>
+                                    <field name="expires" colspan="2"/>
+                                </group>
+                                <group>
+                                    <field name="token_type" colspan="2"/>
+                                </group>
+
+                                <separator string="" colspan="4"/>
+                                <field name="access_token" colspan="4"/>
+                            </page>
+                        </notebook>
+
                     </sheet>
                 </form>
             </field>
