@@ -24,9 +24,7 @@
         'security/ir.model.access.csv',
         'views/genius_rest_connection_views.xml',
         'views/genius_swagger_config_settings_views.xml',
-        'views/genius_proveedor_views.xml',
         'views/genius_purchase_order_views.xml',
-        'views/genius_product_views.xml',
         'views/menus.xml',
     ],
     # only loaded in demonstration mode

@@ -2,11 +2,11 @@
 <odoo>
     <data>
         <!-- Compra/Genius Central  -->
-        <menuitem name="Genius Central" id="menu_genius_purchase_root" parent="purchase.menu_purchase_root" sequence="20"/>
+        <menuitem name="Genius Central" id="menu_genius_purchase_root" parent="purchase.menu_purchase_root" sequence="20" />
 
-        <menuitem name="Productos" id="menu_genius_swagger_productos" parent="menu_genius_purchase_root" sequence="1" action="genius_purchase.action_genius_purchase_product"/>
+        <!-- <menuitem name="Productos" id="menu_genius_swagger_productos" parent="menu_genius_purchase_root" sequence="1" action="genius_purchase.action_genius_purchase_product"/> -->
         <!-- <menuitem name="Proveedores" id="menu_genius_swagger_proveedores" parent="menu_genius_purchase_root" sequence="10" action="genius_purchase.action_genius_purchase_get_proveedor"/> -->
-        <menuitem name="Órdenes de Compra" id="menu_genius_swagger_oc" parent="menu_genius_purchase_root" sequence="15" action="genius_purchase.action_genius_purchases_get_orders"/>
+        <menuitem name="Purchase Orders" id="menu_genius_swagger_oc" parent="menu_genius_purchase_root" sequence="15" action="genius_purchase.action_genius_purchases_get_orders" />
 
 
         <!-- Compra/Configuracion/Swagger Configuracion -->
@@ -18,7 +18,7 @@
 
 
         <record id="menu_genius_rest_conexion" model="ir.ui.menu">
-            <field name="name">Conexión a Swagger</field>
+            <field name="name">Swagger Connection</field>
             <field name="sequence" eval="1" />
             <field name="parent_id" ref="menu_genius_rest_root" />
             <field name="action" ref="genius_purchase.action_genius_rest_connection" />

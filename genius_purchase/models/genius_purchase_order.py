@@ -26,25 +26,25 @@ class GeniusPurchaseOrder(models.Model):
     _description = "Genius Orden de Compra"
 
     name = fields.Char(string="Nombre", compute="_compute_get_name")
-    uniqueOrderID = fields.Char(string="Uid")
-    orderID = fields.Integer(string="ID Orden")
-    storeID = fields.Integer(string="ID del Store")
-    storeName = fields.Char(string="Nombre del Store")
-    storePONumber = fields.Char(string="Número del Store")
-    supplierID = fields.Char(string="ID del Proveedor")
-    supplierName = fields.Char(string="Nombre del Proveedor")
-    dateCreated = fields.Datetime(string="Fecha de Creado")
-    orderTotal = fields.Float(string="Importe Total")
-    orderSource = fields.Integer(string="Fuente")
-    orderStatus = fields.Integer(string="Estado")
-    accountNumber = fields.Char(string="Número de cuenta")
-    message = fields.Html(string="Mensaje")
+    uniqueOrderID = fields.Char(string=_("Uid"))
+    orderID = fields.Integer(string=_("Order ID"))
+    storeID = fields.Integer(string=_("Store ID"))
+    storeName = fields.Char(string=_("Store Name"))
+    storePONumber = fields.Char(string=_("Store Number"))
+    supplierID = fields.Char(string=_("Supplier ID"))
+    supplierName = fields.Char(string=_("Supplier Number"))
+    dateCreated = fields.Datetime(string=_("Created Date"))
+    orderTotal = fields.Float(string=_("Total Amount"))
+    orderSource = fields.Integer(string=_("Order Source"))
+    orderStatus = fields.Integer(string=_("Order Status"))
+    accountNumber = fields.Char(string=_("Account Number"))
+    message = fields.Html(string=_("Message"))
 
     order_line_ids = fields.One2many(
         comodel_name='genius.purchase.order.line',
         inverse_name='purchase_id',
         ondelete='cascade',
-        string="Líneas de Compras")
+        string=_("Purchase Order Lines"))
 
     @api.model
     def create(self, vals):
@@ -104,7 +104,8 @@ class GeniusPurchaseOrder(models.Model):
 
         headers['Authorization'] = connection.access_token
         # Load swagger resource file into app object
-        base_url = "{}/stores/{}/{}".format(connection.base_url, store_id, endpoints)
+        base_url = "{}/stores/{}/{}".format(connection.base_url, store_id,
+                                            endpoints)
 
         req = requests.get('{}'.format(base_url), headers=headers)
 
@@ -125,15 +126,18 @@ class GeniusPurchaseOrder(models.Model):
         uniqueOrder_List = [item.uniqueOrderID for item in self.search([])]
 
         for store in connection.store_ids:
-            req = self.requests(connection=connection, store_id=store.store_id, endpoints='orders')
+            req = self.requests(
+                connection=connection,
+                store_id=store.store_id,
+                endpoints='orders')
             orders = json.loads(req.content.decode('utf-8'))
 
             print(orders)
 
             if len(orders.get('orders')):
                 orders_list = [
-                    orders for orders in orders.get('orders')
-                    if not orders['header']['uniqueOrderID'] in uniqueOrder_List
+                    orders for orders in orders.get('orders') if
+                    not orders['header']['uniqueOrderID'] in uniqueOrder_List
                 ]
                 if len(orders_list):
                     self.env.user.notify_info(
@@ -149,14 +153,17 @@ class GeniusPurchaseOrder(models.Model):
                             'orderID': order['header'].get('orderID'),
                             'storeID': order['header'].get('storeID'),
                             'storeName': order['header'].get('storeName'),
-                            'storePONumber': order['header'].get('storePONumber'),
+                            'storePONumber':
+                            order['header'].get('storePONumber'),
                             'supplierID': order['header'].get('supplierID'),
-                            'supplierName': order['header'].get('supplierName'),
+                            'supplierName':
+                            order['header'].get('supplierName'),
                             'dateCreated': order['header'].get('dateCreated'),
                             'orderTotal': order['header'].get('orderTotal'),
                             'orderSource': order['header'].get('orderSource'),
                             'orderStatus': order['header'].get('orderStatus'),
-                            'accountNumber': order['header'].get('accountNumber'),
+                            'accountNumber':
+                            order['header'].get('accountNumber'),
                             'message': order['header'].get('message'),
                             'order_line_ids': order_lines
                         }
@@ -168,7 +175,8 @@ class GeniusPurchaseOrder(models.Model):
                                 'cost': item.get('cost'),
                                 'quantity': item.get('quantity'),
                                 'uom': item.get('uom'),
-                                'amount': item.get('quantity') * item.get('cost'),
+                                'amount':
+                                item.get('quantity') * item.get('cost'),
                                 'gtin': item.get('gtin')
                             }
                             order_lines.append((0, 0, vals))
@@ -179,7 +187,7 @@ class GeniusPurchaseOrder(models.Model):
 
     def redirect_purchases_orders_view(self):
         # Get lead views
-        self.get_purchase_orders()
+        # self.get_purchase_orders()
 
         action = self.env.ref(
             'genius_purchase.action_genius_purchase_order').read()[0]
@@ -189,16 +197,16 @@ class GeniusPurchaseOrder(models.Model):
 class GeniusPurchaseOrderLine(models.Model):
     _name = 'genius.purchase.order.line'
 
-    supplierSKU = fields.Char(string="SKU del Proveedor")
-    itemDescription = fields.Char(string="Producto")
-    cost = fields.Float(string="Costo")
-    quantity = fields.Integer(string="Cantidad")
-    uom = fields.Char(string="Uom")
+    supplierSKU = fields.Char(string=_("SKU Supplier"))
+    itemDescription = fields.Char(string=_("Product"))
+    cost = fields.Float(string=_("Cost"))
+    quantity = fields.Integer(string=_("Quantity"))
+    uom = fields.Char(string=_("Uom"))
     gtin = fields.Char()
     amount = fields.Float(
-        compute="_compute_get_amount", store=True, string="Importe")
+        compute="_compute_get_amount", store=True, string=_("Amount"))
     purchase_id = fields.Many2one(
-        comodel_name='genius.purchase.order', string="Órden de Compra")
+        comodel_name='genius.purchase.order', string=_("Órden de Compra"))
 
     @api.depends('quantity', 'cost')
     def _compute_get_amount(self):
