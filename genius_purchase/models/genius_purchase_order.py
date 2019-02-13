@@ -131,6 +131,8 @@ class GeniusPurchaseOrder(models.Model):
                 store_id=store.store_id,
                 endpoints='orders')
             orders = json.loads(req.content.decode('utf-8'))
+            
+            # print(orders)
 
             if len(orders.get('orders')):
                 orders_list = [
