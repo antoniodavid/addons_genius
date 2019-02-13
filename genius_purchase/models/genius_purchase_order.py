@@ -102,12 +102,12 @@ class GeniusPurchaseOrder(models.Model):
     @api.model
     def requests(self, connection=None, store_id=None, endpoints=''):
 
+        req = None
         headers['Authorization'] = connection.access_token
-        # Load swagger resource file into app object
         base_url = "{}/stores/{}/{}".format(connection.base_url, store_id,
                                             endpoints)
 
-        req = requests.get('{}'.format(base_url), headers=headers)
+        req = requests.get('{}'.format(base_url), headers=headers, timeout=5)
 
         if req.status_code != 200 and connection.get_access_token():
             headers['Authorization'] = connection.access_token
@@ -131,8 +131,6 @@ class GeniusPurchaseOrder(models.Model):
                 store_id=store.store_id,
                 endpoints='orders')
             orders = json.loads(req.content.decode('utf-8'))
-
-            print(orders)
 
             if len(orders.get('orders')):
                 orders_list = [
