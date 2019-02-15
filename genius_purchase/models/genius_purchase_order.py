@@ -121,7 +121,8 @@ class GeniusPurchaseOrder(models.Model):
             [('type', '=', 'pro')], limit=1)
 
         if not connection.exists():
-            raise UserError(_("Ud. debe configurar la conexión a Swagger"))
+            # raise UserError(_("Ud. debe configurar la conexión a Swagger"))
+            return
 
         uniqueOrder_List = [item.uniqueOrderID for item in self.search([])]
 
@@ -175,8 +176,7 @@ class GeniusPurchaseOrder(models.Model):
                                 'cost': item.get('cost'),
                                 'quantity': item.get('quantity'),
                                 'uom': item.get('uom'),
-                                'amount':
-                                item.get('quantity') * item.get('cost'),
+                                'amount': int(item.get('quantity')) * float(item.get('cost')),
                                 'gtin': item.get('gtin')
                             }
                             order_lines.append((0, 0, vals))
