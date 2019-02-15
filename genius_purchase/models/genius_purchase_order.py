@@ -132,7 +132,7 @@ class GeniusPurchaseOrder(models.Model):
                 store_id=store.store_id,
                 endpoints='orders')
             orders = json.loads(req.content.decode('utf-8'))
-            
+
             # print(orders)
 
             if len(orders.get('orders')):
@@ -140,10 +140,10 @@ class GeniusPurchaseOrder(models.Model):
                     orders for orders in orders.get('orders') if
                     not orders['header']['uniqueOrderID'] in uniqueOrder_List
                 ]
-                if len(orders_list):
-                    self.env.user.notify_info(
-                        message="Se han añadido {} nuevas órdenes de compras".
-                        format(len(orders_list)))
+                # if len(orders_list):
+                #     self.env.user.notify_info(
+                #         message="Se han añadido {} nuevas órdenes de compras".
+                #         format(len(orders_list)))
 
                 for order in orders_list:
                     uniqueOrderID = order['header'].get('uniqueOrderID')
@@ -171,13 +171,21 @@ class GeniusPurchaseOrder(models.Model):
 
                         for item in order.get('details'):
                             vals = {
-                                'supplierSKU': item.get('supplierSKU'),
-                                'itemDescription': item.get('itemDescription'),
-                                'cost': item.get('cost'),
-                                'quantity': item.get('quantity'),
-                                'uom': item.get('uom'),
-                                'amount': int(item.get('quantity')) * float(item.get('cost')),
-                                'gtin': item.get('gtin')
+                                'supplierSKU':
+                                item.get('supplierSKU'),
+                                'itemDescription':
+                                item.get('itemDescription'),
+                                'cost':
+                                item.get('cost'),
+                                'quantity':
+                                item.get('quantity'),
+                                'uom':
+                                item.get('uom'),
+                                'amount':
+                                int(item.get('quantity')) * float(
+                                    item.get('cost')),
+                                'gtin':
+                                item.get('gtin')
                             }
                             order_lines.append((0, 0, vals))
 

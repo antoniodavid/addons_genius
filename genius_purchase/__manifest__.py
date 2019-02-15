@@ -16,7 +16,7 @@
     '1.0',
 
     # any module necessary for this one to work correctly
-    'depends': ['purchase', 'web_notify'],
+    'depends': ['purchase'],
 
     # always loaded
     'data': [
