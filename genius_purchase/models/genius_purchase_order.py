@@ -10,7 +10,8 @@ from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
 
 headers = {
-    'content-type': 'application/x-www-form-urlencoded',
+    'accept': 'application/json',
+    'content-type': 'application/json',
     'charset': 'utf-8',
 }
 
@@ -33,13 +34,19 @@ class GeniusPurchaseOrder(models.Model):
     storeName = fields.Char(string=_("Store Name"))
     storePONumber = fields.Char(string=_("Store Number"))
     supplierID = fields.Char(string=_("Supplier ID"))
-    supplierName = fields.Char(string=_("Supplier Number"))
+    supplierName = fields.Char(string=_("Supplier Name"))
     dateCreated = fields.Datetime(string=_("Created Date"))
     orderTotal = fields.Float(string=_("Total Amount"))
     orderSource = fields.Integer(string=_("Order Source"))
     orderStatus = fields.Integer(string=_("Order Status"))
     accountNumber = fields.Char(string=_("Account Number"))
     message = fields.Html(string=_("Message"))
+    state = fields.Selection(
+        string=_('State'),
+        selection=[('draft', 'Draft'), ('done', 'Done')],
+        default='draft',
+    )
+    
 
     order_line_ids = fields.One2many(
         comodel_name='genius.purchase.order.line',
@@ -53,6 +60,45 @@ class GeniusPurchaseOrder(models.Model):
         if 'name' in init_values:
             return 'mail.mt_comment'
         return False
+
+    @api.multi
+    def action_oc_draft(self):
+        for rec in self:
+
+            order = self.env['purchase.order'].search([('uniqueOrderID', '=', rec.uniqueOrderID)] )
+            if order.exists():
+                return 
+            
+            supplier = self.env['res.partner'].search([('supplier', '=', True), ('name', '=', rec.supplierName)], limit=1)
+
+            if supplier.exists():
+                order_lines = []
+                order_vals = {
+                    'partner_id': supplier.id,
+                    'state': 'draft',
+                    'date_order': rec.dateCreated,
+                    'uniqueOrderID': rec.uniqueOrderID,
+                    'order_line': order_lines
+                }
+
+                product_obj = self.env['product.product']
+                for order_line in rec.order_line_ids:
+                    product = product_obj.search([('barcode', '=', order_line.gtin)], limit=1)
+                    if product.exists():
+                        order_line_vals = {
+                            'product_id': product.id,
+                            'name': product.name,
+                            'product_uom': product.uom_id.id,
+                            'date_planned': rec.dateCreated,
+                            'price_unit': order_line.cost,
+                            'product_qty': order_line.quantity
+                        }
+                        order_lines.append((0, 0, order_line_vals))
+
+                self.env['purchase.order'].create(order_vals)
+                rec.state = 'done'
+            else:
+                raise Warning('No existe el proveedor')
 
     @api.model
     def create(self, vals):
@@ -99,6 +145,7 @@ class GeniusPurchaseOrder(models.Model):
                     order_lines.append((0, 0, order_line_vals))
 
             self.env['purchase.order'].create(order_vals)
+            order_id.write({'state': 'done'})
 
         return order_id
 
@@ -140,9 +187,12 @@ class GeniusPurchaseOrder(models.Model):
                 connection=connection,
                 store_id=store.store_id,
                 endpoints='orders')
+            
+            print(req.text)
+            print(req.json())
             orders = json.loads(req.content.decode('utf-8'))
 
-            # print(orders)
+            print(orders)
 
             if len(orders.get('orders')):
                 orders_list = [

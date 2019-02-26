@@ -7,13 +7,33 @@
             <field name="model">genius.purchase.order</field>
             <field name="type">tree</field>
             <field name="arch" type="xml">
-                <tree string="Órdenes de Compra">
+                <tree string="Órdenes de Compra" decoration-info="state=='draft'" decoration-success="state=='done'">
                     <field name="name" />
                     <field name="dateCreated" />
+                    <field name="state" />
+                    <field name="storeName" invisible="True" />
                 </tree>
             </field>
-
         </record>
+
+        <record id="genius_purchase_order_search" model="ir.ui.view">
+            <field name="name">genius.purchase.order.search</field>
+            <field name="model">genius.purchase.order</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search string="Órdenes de Compra">
+                    <field name="name"/>
+                    <field name="state"/>
+                    <field name="storeName" />
+                    <field name="supplierName" />
+                    <group string="Group By">
+                        <filter name="by_storeName" string="Store Name" context="{'group_by': 'storeName'}"/>
+                        <filter name="by_supplierName" string="Supplier Name" context="{'group_by': 'supplierName'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
         <!-- Form view for "model" -->
         <record id="genius_purchase_order_form" model="ir.ui.view">
             <field name="name">genius.purchase.order.form</field>
@@ -24,6 +44,10 @@
             <field name="active" eval="True" />
             <field name="arch" type="xml">
                 <form string="Genius Órden de Compra">
+                    <header>
+                        <button name="action_oc_draft" class="oe_highlight" states="draft" string="Send to Odoo OC " type="object"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,done" />
+                    </header>
                     <sheet>
                         <div class="oe_title">
                             <label for="name" class="oe_edit_only" />
@@ -39,7 +63,7 @@
                             </group>
                             <group>
                                 <field name="accountNumber" />
-                                <field name="orderTotal" />
+                                <field name="orderTotal" readonly="1"/>
                             </group>
                         </group>
 
@@ -47,7 +71,7 @@
                             <page string="Líneas de Compras">
                                 <field name="order_line_ids">
                                     <tree string="Líneas de Compras" create="1" delete="1" edit="1" editable="top">
-                                        <field name="supplierSKU" />
+                                        <field name="gtin" />
                                         <field name="itemDescription" />
                                         <field name="uom" />
                                         <field name="quantity" />
@@ -78,6 +102,7 @@
             <field name="res_model">genius.purchase.order</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
+            <field name="context" eval="{'search_default_by_storeName': 1}"/>
             <field name="help" type="html">
                 <p class="o_view_nocontent_smiling_face">
           Crear una nueva órden de compra

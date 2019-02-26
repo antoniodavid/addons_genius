@@ -6,7 +6,8 @@ from odoo import models, fields, api
 from odoo.exceptions import UserError, Warning
 
 headers = {
-    'content-type': 'application/x-www-form-urlencoded',
+    'accept': 'application/json',
+    'content-type': 'application/json',
     'charset': 'utf-8',
 }
 
