@@ -31,7 +31,7 @@ class SwaggerConnection(models.Model):
         default="https://idsrv.geniuscentral.com/connect/token",
         required=True)
     client_id = fields.Char(
-        string="Cliente ID", required=True, default="RetailerClientTest")
+        string="Cliente ID", required=True, default="ParadiseHealth-ID")
     client_secret = fields.Char(string="Cliente Contraseña", required=True)
     store_ids = fields.One2many(
         comodel_name="genius.swagger.store",
