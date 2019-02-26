@@ -24,11 +24,11 @@ class SwaggerConnection(models.Model):
         default='pro')
     base_url = fields.Char(
         string="Base Url",
-        default="https://posapi.dev.geniuscentral.com",
+        default="https://posapi.geniuscentral.com",
         required=True)
     token_url = fields.Char(
         string="Token Url",
-        default="https://idsrv.dev.geniuscentral.com/connect/token",
+        default="https://idsrv.geniuscentral.com/connect/token",
         required=True)
     client_id = fields.Char(
         string="Cliente ID", required=True, default="RetailerClientTest")

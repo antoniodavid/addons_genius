@@ -52,7 +52,7 @@
                                         <field name="uom" />
                                         <field name="quantity" />
                                         <field name="cost" />
-                                        <field name="amount" sum="Total importe"/>
+                                        <field name="amount" sum="Total importe" />
                                     </tree>
                                 </field>
                             </page>
@@ -63,6 +63,10 @@
 
                         </notebook>
                     </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers" groups="base.group_user" />
+                        <field name="message_ids" widget="mail_thread" />
+                    </div>
                 </form>
             </field>
         </record>
@@ -83,7 +87,7 @@
 
         <record model="ir.actions.server" id="action_genius_purchases_get_orders">
             <field name="name">Genius - Órdenes de Compra</field>
-            <field name="model_id" ref="model_genius_purchase_order"/>
+            <field name="model_id" ref="model_genius_purchase_order" />
             <field name="state">code</field>
             <field name="code">action = model.redirect_purchases_orders_view()</field>
         </record>

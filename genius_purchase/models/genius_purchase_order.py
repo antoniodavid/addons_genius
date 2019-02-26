@@ -23,9 +23,10 @@ class PurchaseOrder(models.Model):
 
 class GeniusPurchaseOrder(models.Model):
     _name = 'genius.purchase.order'
+    _inherit = ['mail.thread']
     _description = "Genius Orden de Compra"
 
-    name = fields.Char(string="Nombre", compute="_compute_get_name")
+    name = fields.Char(string="Nombre", compute="_compute_get_name", track_visibility=True)
     uniqueOrderID = fields.Char(string=_("Uid"))
     orderID = fields.Integer(string=_("Order ID"))
     storeID = fields.Integer(string=_("Store ID"))
@@ -45,6 +46,13 @@ class GeniusPurchaseOrder(models.Model):
         inverse_name='purchase_id',
         ondelete='cascade',
         string=_("Purchase Order Lines"))
+
+    @api.multi
+    def _track_subtype(self, init_values):
+        self.ensure_one()
+        if 'name' in init_values:
+            return 'mail.mt_comment'
+        return False
 
     @api.model
     def create(self, vals):
@@ -104,14 +112,15 @@ class GeniusPurchaseOrder(models.Model):
 
         req = None
         headers['Authorization'] = connection.access_token
+        payload = {'previouslyExportedOrders': 'false'}
         base_url = "{}/stores/{}/{}".format(connection.base_url, store_id,
                                             endpoints)
 
-        req = requests.get('{}'.format(base_url), headers=headers, timeout=5)
+        req = requests.get('{}'.format(base_url), headers=headers, params=payload, timeout=5)
 
         if req.status_code != 200 and connection.get_access_token():
             headers['Authorization'] = connection.access_token
-            req = requests.get('{}'.format(base_url), headers=headers)
+            req = requests.get('{}'.format(base_url), headers=headers, params=payload, timeout=5)
 
         return req
 
@@ -196,7 +205,9 @@ class GeniusPurchaseOrder(models.Model):
     def redirect_purchases_orders_view(self):
         # Get lead views
         # self.get_purchase_orders()
-
+        body ="Message has been approved on {}".format(datetime.now())
+        self.message_post(body=body, subject="Subject", subtype="mt_note")
+        
         action = self.env.ref(
             'genius_purchase.action_genius_purchase_order').read()[0]
         return action
