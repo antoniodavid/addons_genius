@@ -75,6 +75,7 @@ class GeniusPurchaseOrder(models.Model):
                 order_lines = []
                 order_vals = {
                     'partner_id': supplier.id,
+                    'partner_ref': rec.supplierName,
                     'state': 'draft',
                     'date_order': rec.dateCreated,
                     'uniqueOrderID': rec.uniqueOrderID,
@@ -94,6 +95,10 @@ class GeniusPurchaseOrder(models.Model):
                             'product_qty': order_line.quantity
                         }
                         order_lines.append((0, 0, order_line_vals))
+
+                picking = self.env['stock.picking.type'].search([('barcode', '=', rec.storeID)], limit=1)
+                if picking.exists():
+                    order_vals['picking_type_id'] = picking.id
 
                 self.env['purchase.order'].create(order_vals)
                 rec.state = 'done'
@@ -116,6 +121,7 @@ class GeniusPurchaseOrder(models.Model):
             order_lines = []
             order_vals = {
                 'partner_id': supplier.id,
+                'partner_ref': vals.get('supplierName'),
                 'state': 'draft',
                 'date_order': vals.get('dateCreated', fields.Datetime.today),
                 'uniqueOrderID': vals.get('uniqueOrderID'),
@@ -143,6 +149,10 @@ class GeniusPurchaseOrder(models.Model):
                         line.get('quantity')
                     }
                     order_lines.append((0, 0, order_line_vals))
+            
+            picking = self.env['stock.picking.type'].search([('barcode', '=', vals.get('storeID'))], limit=1)
+            if picking.exists():
+                order_vals['picking_type_id'] = picking.id
 
             self.env['purchase.order'].create(order_vals)
             order_id.write({'state': 'done'})
