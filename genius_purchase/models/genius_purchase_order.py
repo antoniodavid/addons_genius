@@ -11,7 +11,7 @@ from odoo.exceptions import UserError, ValidationError
 
 headers = {
     'accept': 'application/json',
-    'content-type': 'application/json',
+    'content-type': 'application/x-www-form-urlencoded',
     'charset': 'utf-8',
 }
 
@@ -159,16 +159,16 @@ class GeniusPurchaseOrder(models.Model):
 
         req = None
         headers['Authorization'] = connection.access_token
-        payload = {'previouslyExportedOrders': 'false'}
-        base_url = "{}/stores/{}/{}".format(connection.base_url, store_id,
+        # payload = {'previouslyExportedOrders': False}
+        base_url = "{}/stores/{}/{}?previouslyExportedOrders=false".format(connection.base_url, store_id,
                                             endpoints)
 
-        req = requests.get('{}'.format(base_url), headers=headers, params=payload, timeout=5)
+        req = requests.get('{}'.format(base_url), headers=headers, timeout=5)
 
         if req.status_code != 200 and connection.get_access_token():
             headers['Authorization'] = connection.access_token
-            req = requests.get('{}'.format(base_url), headers=headers, params=payload, timeout=5)
-
+            req = requests.get('{}'.format(base_url), headers=headers, timeout=5)
+        print(req.status_code)
         return req
 
     @api.model
@@ -188,6 +188,8 @@ class GeniusPurchaseOrder(models.Model):
                 store_id=store.store_id,
                 endpoints='orders')
             
+            print(req.content)
+
             orders = json.loads(req.content.decode('utf-8'))
 
             # print(orders)

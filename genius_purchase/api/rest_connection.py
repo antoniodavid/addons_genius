@@ -7,7 +7,7 @@ from odoo.exceptions import UserError, Warning
 
 headers = {
     'accept': 'application/json',
-    'content-type': 'application/json',
+    'content-type': 'application/x-www-form-urlencoded',
     'charset': 'utf-8',
 }
 
@@ -67,7 +67,7 @@ class SwaggerConnection(models.Model):
         data['client_secret'] = self.client_secret
 
         req = requests.post(self.token_url, headers=headers, data=data)
-
+        print(req.status_code)
         if req.status_code == 200:
             res = req.json()
             self.write({
