@@ -54,12 +54,12 @@ class GeniusPurchaseOrder(models.Model):
         ondelete='cascade',
         string=_("Purchase Order Lines"))
 
-    @api.multi
-    def _track_subtype(self, init_values):
-        self.ensure_one()
-        if 'name' in init_values:
-            return 'mail.mt_comment'
-        return False
+    # @api.multi
+    # def _track_subtype(self, init_values):
+    #     self.ensure_one()
+    #     if 'name' in init_values:
+    #         return 'mail.mt_comment'
+    #     return False
 
     @api.multi
     def action_oc_draft(self):
@@ -178,7 +178,6 @@ class GeniusPurchaseOrder(models.Model):
         if req.status_code != 200 and connection.get_access_token():
             headers['Authorization'] = connection.access_token
             req = requests.get('{}'.format(base_url), headers=headers, timeout=5)
-        print(req.status_code)
         return req
 
     @api.model
@@ -187,7 +186,6 @@ class GeniusPurchaseOrder(models.Model):
             [('type', '=', 'pro')], limit=1)
 
         if not connection.exists():
-            # raise UserError(_("Ud. debe configurar la conexión a Swagger"))
             return
 
         uniqueOrder_List = [item.uniqueOrderID for item in self.search([])]
@@ -198,10 +196,7 @@ class GeniusPurchaseOrder(models.Model):
                 store_id=store.store_id,
                 endpoints='orders')
             
-            print(req.content)
-
             orders = json.loads(req.content.decode('utf-8'))
-
             # print(orders)
 
             if len(orders.get('orders')):
